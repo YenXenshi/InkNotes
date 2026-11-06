@@ -12,33 +12,35 @@
 </head>
 <body>
 <div id="bar">
-  <div id="tools">
-    <button id="tPen" class="tool on" title="Pen" aria-label="Pen">✏️<i>Pen</i></button>
-    <button id="tHl" class="tool" title="Highlighter" aria-label="Marker">🖍<i>Marker</i></button>
-    <button id="tEr" class="tool" title="Eraser" aria-label="Erase">🧽<i>Erase</i></button>
-    <button id="tSel" class="tool" title="Select, move, resize" aria-label="Select">👆<i>Select</i></button>
-    <button id="tTx" class="tool" title="Type text" aria-label="Text">T<i>Text</i></button>
-    <button id="tLk" class="tool" title="Link: tap one shape, then another, to draw a line between them" aria-label="Link">🔗<i>Link</i></button>
-    <button id="tSh" class="tool" title="Shapes" aria-label="Shapes">⬡<i>Shapes</i></button>
-    <button id="tSt" class="tool" title="Stickers and icons" aria-label="Stickers">😀<i>Stickers</i></button>
-    <button id="tWr" class="tool" title="Write by hand, it turns into typed text" aria-label="Write to text">✍<i>Write</i></button>
-  </div>
+  <button id="bHub" title="Menu" aria-label="Menu" aria-haspopup="true"><span id="hubIc">✏️</span></button>
+  <span id="hubName">Pen</span>
+  <span class="grow"></span>
   <button id="bInk" title="Color and size" aria-label="Color and size" aria-haspopup="true"><span id="inkDot"></span><span id="inkNum">3</span></button>
   <button id="bUn" title="Undo" aria-label="Undo">↶</button>
   <button id="bRe" title="Redo" aria-label="Redo">↷</button>
-  <button id="bMore" title="More" aria-label="More" aria-haspopup="true">⋯</button>
 </div>
-<div id="menu" class="pop" hidden>
-  <button id="bTpl" title="Choose a page form, with previews">📋 Forms</button>
-  <button id="bPg">📄 Pages</button>
-  <button id="bAi">✨ AI</button>
-  <button id="bPng" title="Save page as image">⬇ Save PNG</button>
-  <button id="bZo" title="Zoom out">－ Zoom out</button>
-  <button id="bZi" title="Zoom in">＋ Zoom in</button>
-  <button id="bMic" title="Speak and it is typed onto the page">🎤 Dictate</button>
-  <button id="bFin" title="Let your finger draw, not only scroll">☝ Finger draws: off</button>
-  <button id="bClr" title="Clear this page">🧹 Clear page</button>
-  <button id="bSet" title="Settings">⚙ Settings</button>
+<div id="hub" hidden>
+  <div id="hubGrid">
+    <button id="tPen" class="hex tool on" title="Pen">✏️<i>Pen</i></button>
+    <button id="tHl" class="hex tool" title="Highlighter">🖍<i>Marker</i></button>
+    <button id="tEr" class="hex tool" title="Eraser">🧽<i>Erase</i></button>
+    <button id="tSel" class="hex tool" title="Select, move, resize">👆<i>Select</i></button>
+    <button id="tTx" class="hex tool" title="Type text">T<i>Text</i></button>
+    <button id="tLk" class="hex tool" title="Link: tap one shape, then another, to draw a line between them">🔗<i>Link</i></button>
+    <button id="tSh" class="hex tool" title="Shapes">⬡<i>Shapes</i></button>
+    <button id="tSt" class="hex tool" title="Stickers and icons">😀<i>Stickers</i></button>
+    <button id="tWr" class="hex tool" title="Write by hand, it turns into typed text">✍<i>Write</i></button>
+    <button id="bTpl" class="hex page" title="Choose a page form, with previews">📋<i>Forms</i></button>
+    <button id="bPg" class="hex page" title="Pages">📄<i>Pages</i></button>
+    <button id="bAi" class="hex page" title="AI">✨<i>AI</i></button>
+    <button id="bPng" class="hex page" title="Save page as image">⬇<i>PNG</i></button>
+    <button id="bSet" class="hex page" title="Settings">⚙<i>Settings</i></button>
+    <button id="bMic" class="hex page" title="Speak and it is typed onto the page">🎤<i class="lb">Dictate</i></button>
+    <button id="bFin" class="hex page" title="Let your finger draw, not only scroll">☝<i class="lb">Finger: off</i></button>
+    <button id="bZo" class="hex page" title="Zoom out">－<i>Zoom out</i></button>
+    <button id="bZi" class="hex page" title="Zoom in">＋<i>Zoom in</i></button>
+    <button id="bClr" class="hex page danger" title="Clear this page">🧹<i>Clear</i></button>
+  </div>
 </div>
 <div id="inkPop" class="pop" hidden>
   <div class="lbl">Color</div>
