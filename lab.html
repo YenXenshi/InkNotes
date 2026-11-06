@@ -13,11 +13,11 @@ button.pri{background:#4f7cff;color:#fff;border:0;font-weight:600}
 progress{width:100%;height:14px}
 details{background:#fff;border:1px solid #b9c0d0;border-radius:10px;padding:8px 12px;margin:10px 0}summary{font-weight:600;min-height:40px;display:flex;align-items:center}label{display:block;margin:8px 0 2px;font-size:14px;color:#334}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 12px}.grid input,.grid select{width:100%;box-sizing:border-box}#st{font-weight:600;color:#1d4ed8;min-height:24px}
 </style></head><body>
-<h1>On-device handwriting test</h1>
+<h1>On-device handwriting test <small style="font-weight:400;font-size:13px;color:#667">v3 · worker · small model default</small></h1>
 <p class="note">This page runs an open handwriting model (TrOCR) inside your browser, with no key and no server. The first run downloads the model from Hugging Face and keeps it in this browser. Nothing you write leaves this device, and this page never uses your Gemini key. Write <b>one line</b> below, then tap Recognize.</p>
 <canvas id="c" width="1200" height="260"></canvas>
 <details open><summary>Settings (change any time; Load model again after changing the first four)</summary><div class="grid">
-<div><label for="model">Model</label><input id="model" value="Xenova/trocr-base-handwritten"></div>
+<div><label for="model">Model</label><input id="model" value="Xenova/trocr-small-handwritten" list="ml"><datalist id="ml"><option value="Xenova/trocr-small-handwritten"><option value="Xenova/trocr-base-handwritten"></datalist></div>
 <div><label for="dev">Run on</label><select id="dev"><option value="wasm">CPU (works everywhere)</option><option value="webgpu">GPU (WebGPU)</option></select></div>
 <div><label for="dt">Precision</label><select id="dt"><option value="q8">q8 (smallest, fastest)</option><option value="fp16">fp16</option><option value="fp32">fp32 (biggest)</option></select></div>
 <div><label for="thr">CPU threads (0 = auto)</label><input id="thr" type="number" min="0" max="8" value="0"></div>
@@ -38,7 +38,7 @@ const KEYS = ['model', 'dev', 'dt', 'thr', 'mx', 'to'];
 try { const sv = JSON.parse(localStorage.getItem('inklab') || '{}'); KEYS.forEach(k => { if (sv[k] != null) $('#' + k).value = sv[k]; }); } catch (e) { /* first visit */ }
 const keep = () => { try { localStorage.setItem('inklab', JSON.stringify(Object.fromEntries(KEYS.map(k => [k, $('#' + k).value])))); } catch (e) { /* private mode */ } };
 KEYS.forEach(k => ($('#' + k).onchange = keep));
-say('Browser: ' + navigator.userAgent); say('Cores: ' + navigator.hardwareConcurrency + ' | memory hint (GB): ' + (navigator.deviceMemory || 'n/a') + ' | WebGPU: ' + ('gpu' in navigator) + ' | crossOriginIsolated: ' + self.crossOriginIsolated + ' (false = the CPU runs on one thread here)');
+say('Page version: v3 (if you do not see "v3" in the title, reload with ?v=3 on the address)'); say('Browser: ' + navigator.userAgent); say('Cores: ' + navigator.hardwareConcurrency + ' | memory hint (GB): ' + (navigator.deviceMemory || 'n/a') + ' | WebGPU: ' + ('gpu' in navigator) + ' | crossOriginIsolated: ' + self.crossOriginIsolated + ' (false = the CPU runs on one thread here)');
 /* ---- drawing ---- */
 function ink() { g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.lineCap = g.lineJoin = 'round'; g.strokeStyle = '#111'; g.lineWidth = 5; }
 ink(); let down = false, last = null, box = null;
