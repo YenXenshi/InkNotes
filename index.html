@@ -8,7 +8,7 @@
 <title>InkNotes</title>
 <meta name="theme-color" content="#1b1e26">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="app.css?v=nWFieyvQhC">
+<link rel="stylesheet" href="app.css?v=KnWGXogino">
 </head>
 <body>
 <div id="bar">
@@ -26,6 +26,7 @@
     <button id="tHl" class="hex tool" title="Highlighter">🖍<i>Marker</i></button>
     <button id="tEr" class="hex tool" title="Eraser">🧽<i>Erase</i></button>
     <button id="tSel" class="hex tool" title="Select, move, resize">👆<i>Select</i></button>
+    <button id="tLs" class="hex tool" title="Lasso: draw a loop around things to pick them up and move them">➰<i>Lasso</i></button>
     <button id="tTx" class="hex tool" title="Type text">T<i>Text</i></button>
     <button id="tLk" class="hex tool" title="Link: tap one shape, then another, to draw a line between them">🔗<i>Link</i></button>
     <button id="tSh" class="hex tool" title="Shapes">⬡<i>Shapes</i></button>
@@ -40,8 +41,12 @@
     <button id="bFin" class="hex page" title="Let your finger draw, not only scroll">☝<i class="lb">Finger: off</i></button>
     <button id="bZo" class="hex page" title="Zoom out">－<i>Zoom out</i></button>
     <button id="bZi" class="hex page" title="Zoom in">＋<i>Zoom in</i></button>
+    <button id="bSnap" class="hex page on" title="Guide lines that help things line up when you move them">📐<i class="lb">Guides</i></button>
     <button id="bClr" class="hex page danger" title="Clear this page">🧹<i>Clear</i></button>
   </div>
+</div>
+<div id="lassoBar" class="pop" hidden>
+  <button id="lsCopy" title="Copy">⧉ Copy</button><button id="lsDel" title="Delete">🗑 Delete</button><button id="lsDone" title="Done">✕</button>
 </div>
 <div id="clrPop" class="pop" hidden>
   <b>Clear this whole page?</b>
@@ -146,6 +151,6 @@
 </div></div>
 <div id="toast"></div>
 <button id="abChip" hidden></button>
-<script defer src="app.js?v=nWFieyvQhC"></script>
+<script defer src="app.js?v=KnWGXogino"></script>
 </body>
 </html>
