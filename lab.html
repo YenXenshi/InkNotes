@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>InkNotes lab: on-device handwriting test</title>
+<style>
+body{font:16px system-ui,sans-serif;margin:0;padding:12px;background:#f4f5f8;color:#14161c;max-width:960px}
+h1{font-size:20px;margin:0 0 4px}p,li{line-height:1.45}.note{color:#556;font-size:14px}
+canvas{display:block;width:100%;height:auto;background:#fff;border:2px solid #b9c0d0;border-radius:10px;touch-action:none}
+button,select,input{font:inherit;min-height:48px;border-radius:10px;border:1px solid #b9c0d0;padding:0 14px;background:#fff}
+button.pri{background:#4f7cff;color:#fff;border:0;font-weight:600}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+#out{font-size:22px;font-weight:600;padding:12px;background:#fff;border-radius:10px;min-height:40px;white-space:pre-wrap;overflow-wrap:anywhere}
+#log{font:13px ui-monospace,monospace;background:#14161c;color:#cfe3ff;padding:10px;border-radius:10px;white-space:pre-wrap;max-height:240px;overflow:auto}
+progress{width:100%;height:14px}
+</style></head><body>
+<h1>On-device handwriting test</h1>
+<p class="note">This page runs an open handwriting model (TrOCR) inside your browser, with no key and no server. The first run downloads the model from Hugging Face and keeps it in this browser. Nothing you write leaves this device. Write <b>one line</b> below, then tap Recognize.</p>
+<canvas id="c" width="1200" height="260"></canvas>
+<div class="row"><button id="clear">Clear</button>
+<select id="dev" aria-label="Run on"><option value="wasm">CPU (works everywhere)</option><option value="webgpu">GPU (WebGPU, faster if supported)</option></select>
+<input id="model" value="Xenova/trocr-base-handwritten" aria-label="Model id" size="32"></div>
+<div class="row"><button id="load" class="pri">1. Load model</button><button id="go" class="pri" disabled>2. Recognize</button></div>
+<progress id="bar" value="0" max="100" hidden></progress>
+<div id="out" aria-live="polite">Result appears here.</div>
+<h3>Numbers (send these to Claude)</h3><div id="log">Nothing yet.</div>
+<script type="module">
+const $ = s => document.querySelector(s), cv = $('#c'), g = cv.getContext('2d'), log = $('#log'), lines = [];
+const say = t => { lines.push(t); log.textContent = lines.join('\n'); log.scrollTop = 1e9; };
+lines.length = 0; log.textContent = '';
+say('Browser: ' + navigator.userAgent); say('Cores: ' + navigator.hardwareConcurrency + ' | memory hint (GB): ' + (navigator.deviceMemory || 'n/a') + ' | WebGPU: ' + ('gpu' in navigator));
+function ink() { g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.lineCap = g.lineJoin = 'round'; g.strokeStyle = '#111'; g.lineWidth = 5; }
+ink(); let down = false, last = null, box = null;
+const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+cv.onpointerdown = e => { down = true; cv.setPointerCapture(e.pointerId); last = pt(e); };
+cv.onpointermove = e => { if (!down) return; const p = pt(e); g.beginPath(); g.moveTo(...last); g.lineTo(...p); g.stroke(); box = box ? [Math.min(box[0], p[0]), Math.min(box[1], p[1]), Math.max(box[2], p[0]), Math.max(box[3], p[1])] : [p[0], p[1], p[0], p[1]]; last = p; };
+cv.onpointerup = cv.onpointercancel = () => { down = false; };
+$('#clear').onclick = () => { ink(); box = null; $('#out').textContent = 'Result appears here.'; };
+let pipe = null, dev = '';
+const used = async () => { try { return (await navigator.storage.estimate()).usage || 0; } catch (e) { return 0; } };
+const mb = n => (n / 1048576).toFixed(1) + ' MB';
+$('#load').onclick = async () => {
+  $('#load').disabled = true; $('#bar').hidden = false; $('#out').textContent = 'Loading… the first time this downloads the model.';
+  try {
+    const t0 = performance.now(), u0 = await used();
+    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/dist/transformers.min.js');
+    env.allowLocalModels = false;
+    dev = $('#dev').value; const files = {};
+    pipe = await pipeline('image-to-text', $('#model').value.trim(), { device: dev, dtype: dev === 'webgpu' ? 'fp32' : 'q8', progress_callback: p => { if (p.file && p.total) files[p.file] = [p.loaded, p.total]; const L = Object.values(files); const a = L.reduce((s, x) => s + x[0], 0), b = L.reduce((s, x) => s + x[1], 0); if (b) $('#bar').value = 100 * a / b; } });
+    const u1 = await used();
+    say('Model: ' + $('#model').value.trim() + ' on ' + dev + ' | loaded in ' + ((performance.now() - t0) / 1000).toFixed(1) + ' s | storage grew by ' + mb(Math.max(0, u1 - u0)) + ' (0 means it was already cached)');
+    Object.entries(files).forEach(([f, [, t]]) => say('  file ' + f.split('/').pop() + ': ' + mb(t)));
+    $('#out').textContent = 'Model ready. Write a line, then tap Recognize.'; $('#go').disabled = false;
+  } catch (e) { say('LOAD FAILED: ' + (e && e.message || e)); $('#out').textContent = 'Could not load the model: ' + (e && e.message || e) + '\n(Needs a network connection the first time.)'; }
+  $('#load').disabled = false; $('#bar').hidden = true;
+};
+$('#go').onclick = async () => {
+  if (!pipe || !box) { $('#out').textContent = pipe ? 'Write something first.' : 'Load the model first.'; return; }
+  const pad = 24, x = Math.max(0, box[0] - pad), y = Math.max(0, box[1] - pad), w = Math.min(cv.width - x, box[2] - box[0] + 2 * pad), h = Math.min(cv.height - y, box[3] - box[1] + 2 * pad);
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const k = c.getContext('2d'); k.fillStyle = '#fff'; k.fillRect(0, 0, w, h); k.drawImage(cv, x, y, w, h, 0, 0, w, h);
+  $('#go').disabled = true; $('#out').textContent = 'Reading…';
+  try {
+    const t0 = performance.now(); const r = await pipe(c.toDataURL('image/png'), { max_new_tokens: 64 });
+    const ms = performance.now() - t0; $('#out').textContent = r[0].generated_text; say('Read in ' + (ms / 1000).toFixed(1) + ' s -> "' + r[0].generated_text + '"');
+  } catch (e) { say('READ FAILED: ' + (e && e.message || e)); $('#out').textContent = 'Could not read it: ' + (e && e.message || e); }
+  $('#go').disabled = false;
+};
+</script></body></html>
