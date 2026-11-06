@@ -8,7 +8,7 @@
 <title>InkNotes</title>
 <meta name="theme-color" content="#1b1e26">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="app.css?v=gUkUAHb5vL">
+<link rel="stylesheet" href="app.css?v=IK6fyFxuD0">
 </head>
 <body>
 <div id="bar">
@@ -151,11 +151,16 @@
   <input id="sCap" type="number" min="1">
   <label class="note">Handwriting to text uses</label>
   <select id="sRecog">
-    <option value="auto">Automatic (built-in if available, else Gemini)</option>
+    <option value="auto">Automatic (built-in, then on-device if downloaded, then Gemini)</option>
+    <option value="device">On-device model only (free, no key)</option>
     <option value="chrome">Built-in browser recognizer only</option>
     <option value="gemini">Gemini only (needs key)</option>
     <option value="off">Off</option>
   </select>
+  <label class="note" for="sOcrModel">On-device handwriting model (free, no key, runs on this tablet)</label>
+  <input id="sOcrModel" list="sOcrList" spellcheck="false"><datalist id="sOcrList"><option value="Xenova/trocr-small-handwritten"><option value="Xenova/trocr-base-handwritten"></datalist>
+  <div class="row"><button id="sOcrGo">Download &amp; test</button><button id="sOcrStop" hidden>Cancel</button></div>
+  <p id="sOcrSt" class="note">Small model: about 60 MB, once. Needs the hosted app and internet the first time.</p>
   <label class="note">Seconds to wait after you stop writing before converting</label>
   <input id="sDelay" type="number" min="0.5" max="5" step="0.5">
   <label class="chk"><input id="sFinger" type="checkbox"> Draw with finger (otherwise finger scrolls, pen draws)</label>
@@ -167,6 +172,6 @@
 </div></div>
 <div id="toast"></div>
 <button id="abChip" hidden></button>
-<script defer src="app.js?v=gUkUAHb5vL"></script>
+<script defer src="app.js?v=IK6fyFxuD0"></script>
 </body>
 </html>
