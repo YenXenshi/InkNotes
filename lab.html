@@ -13,7 +13,7 @@ button.pri{background:#4f7cff;color:#fff;border:0;font-weight:600}
 progress{width:100%;height:14px}
 details{background:#fff;border:1px solid #b9c0d0;border-radius:10px;padding:8px 12px;margin:10px 0}summary{font-weight:600;min-height:40px;display:flex;align-items:center}label{display:block;margin:8px 0 2px;font-size:14px;color:#334}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 12px}.grid input,.grid select{width:100%;box-sizing:border-box}#st{font-weight:600;color:#1d4ed8;min-height:24px}
 </style></head><body>
-<h1>On-device handwriting test <small style="font-weight:400;font-size:13px;color:#667">v3 · worker · small model default</small></h1>
+<h1>On-device handwriting test <small style="font-weight:400;font-size:13px;color:#667">v4 · worker · small model default</small></h1>
 <p class="note">This page runs an open handwriting model (TrOCR) inside your browser, with no key and no server. The first run downloads the model from Hugging Face and keeps it in this browser. Nothing you write leaves this device, and this page never uses your Gemini key. Write <b>one line</b> below, then tap Recognize.</p>
 <canvas id="c" width="1200" height="260"></canvas>
 <details open><summary>Settings (change any time; Load model again after changing the first four)</summary><div class="grid">
@@ -28,7 +28,7 @@ details{background:#fff;border:1px solid #b9c0d0;border-radius:10px;padding:8px 
 <progress id="bar" value="0" max="100" hidden></progress>
 <div id="st" aria-live="polite"></div>
 <div id="out" aria-live="polite">Result appears here.</div>
-<h3>Numbers (send these to Claude)</h3><div id="log"></div>
+<h3>Numbers (send these to Claude)</h3><div class="row"><button id="copy">Copy numbers</button></div><div id="log"></div>
 <script type="module">
 const CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/dist/transformers.min.js';
 const $ = s => document.querySelector(s), cv = $('#c'), g = cv.getContext('2d'), log = $('#log'), lines = [];
@@ -38,7 +38,7 @@ const KEYS = ['model', 'dev', 'dt', 'thr', 'mx', 'to'];
 try { const sv = JSON.parse(localStorage.getItem('inklab') || '{}'); KEYS.forEach(k => { if (sv[k] != null) $('#' + k).value = sv[k]; }); } catch (e) { /* first visit */ }
 const keep = () => { try { localStorage.setItem('inklab', JSON.stringify(Object.fromEntries(KEYS.map(k => [k, $('#' + k).value])))); } catch (e) { /* private mode */ } };
 KEYS.forEach(k => ($('#' + k).onchange = keep));
-say('Page version: v3 (if you do not see "v3" in the title, reload with ?v=3 on the address)'); say('Browser: ' + navigator.userAgent); say('Cores: ' + navigator.hardwareConcurrency + ' | memory hint (GB): ' + (navigator.deviceMemory || 'n/a') + ' | WebGPU: ' + ('gpu' in navigator) + ' | crossOriginIsolated: ' + self.crossOriginIsolated + ' (false = the CPU runs on one thread here)');
+say('Page version: v4 (if the title does not end in v4, reload with ?v=4 on the address)'); say('Browser: ' + navigator.userAgent); say('Cores: ' + navigator.hardwareConcurrency + ' | memory hint (GB): ' + (navigator.deviceMemory || 'n/a') + ' | WebGPU: ' + ('gpu' in navigator) + ' | crossOriginIsolated: ' + self.crossOriginIsolated + ' (false = the CPU runs on one thread here)');
 /* ---- drawing ---- */
 function ink() { g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.lineCap = g.lineJoin = 'round'; g.strokeStyle = '#111'; g.lineWidth = 5; }
 ink(); let down = false, last = null, box = null;
@@ -69,17 +69,19 @@ self.onmessage = async e => {
 };`;
 let wk = null, ready = false, busyT = 0, t0 = 0, files = {};
 const status = t => { $('#st').textContent = t; };
-const tick = what => { t0 = performance.now(); clearInterval(busyT); busyT = setInterval(() => { const s = Math.round((performance.now() - t0) / 1000); $('#st').textContent = (what() || '') + ' · ' + s + ' s'; if (s >= +$('#to').value) fail('Gave up after ' + s + ' seconds.'); }, 500); };
+let lastStage = '', T00 = performance.now();
+const stage = t => { if (t && t !== lastStage && !/^Downloading model/.test(t)) { lastStage = t; say('[' + ((performance.now() - T00) / 1000).toFixed(1) + ' s] ' + t); } };
+const tick = what => { T00 = performance.now(); lastStage = ''; t0 = performance.now(); clearInterval(busyT); busyT = setInterval(() => { const s = Math.round((performance.now() - t0) / 1000); $('#st').textContent = (what() || '') + ' · ' + s + ' s'; if (s >= +$('#to').value) fail('Gave up after ' + s + ' seconds.'); }, 500); };
 const idle = () => { clearInterval(busyT); $('#stop').hidden = true; $('#bar').hidden = true; $('#load').disabled = false; $('#go').disabled = !ready; };
 function kill() { if (wk) { wk.terminate(); wk = null; } ready = false; }
-function fail(msg, hard = true) { if (hard) kill(); say('STOPPED: ' + msg); $('#out').textContent = msg + (hard ? '\nTap Load model to start again. Try CPU + q8, or a smaller max.' : ''); status(''); idle(); }
+function fail(msg, hard = true) { const where = $('#st').dataset.s || '(nothing yet)'; if (hard) kill(); say('STOPPED while: ' + where + ' | ' + msg); $('#out').textContent = msg + (hard ? '\nTap Load model to start again. Try CPU + q8, or a smaller max.' : ''); status(''); idle(); }
 function spawn() {
   kill(); wk = new Worker(URL.createObjectURL(new Blob([WORKER], { type: 'text/javascript' })), { type: 'module' });
   wk.onerror = e => fail('The worker crashed: ' + (e.message || 'unknown error'));
   wk.onmessage = e => {
     const m = e.data;
-    if (m.type === 'st') { $('#st').dataset.s = m.t; }
-    else if (m.type === 'prog') { const p = m.p; if (p.file && p.total) files[p.file] = [p.loaded, p.total]; const L = Object.values(files), a = L.reduce((s, x) => s + x[0], 0), b = L.reduce((s, x) => s + x[1], 0); if (b) { $('#bar').value = 100 * a / b; $('#st').dataset.s = 'Downloading model ' + mb(a) + ' of ' + mb(b) + ' (' + Math.round(100 * a / b) + '%)'; } else if (p.status) $('#st').dataset.s = p.status + (p.file ? ' ' + p.file.split('/').pop() : ''); }
+    if (m.type === 'st') { $('#st').dataset.s = m.t; stage(m.t); }
+    else if (m.type === 'prog') { const p = m.p; if (p.file && p.total) files[p.file] = [p.loaded, p.total]; const L = Object.values(files), a = L.reduce((s, x) => s + x[0], 0), b = L.reduce((s, x) => s + x[1], 0); if (b) { $('#bar').value = 100 * a / b; $('#st').dataset.s = 'Downloading model ' + mb(a) + ' of ' + mb(b) + ' (' + Math.round(100 * a / b) + '%)'; } else if (p.status) { $('#st').dataset.s = p.status + (p.file ? ' ' + p.file.split('/').pop() : ''); stage($('#st').dataset.s); } }
     else if (m.type === 'ready') { ready = true; const e2 = Object.entries(files); say('Model ready in ' + ((performance.now() - t0) / 1000).toFixed(1) + ' s | ' + $('#model').value.trim() + ' | ' + $('#dev').value + ' | ' + $('#dt').value); e2.forEach(([f, [, t]]) => say('  file ' + f.split('/').pop() + ': ' + mb(t))); $('#out').textContent = 'Model ready. Write a line, then tap Recognize.'; status(''); idle(); }
     else if (m.type === 'text') { $('#out').textContent = m.text || '(nothing recognised)'; say('Read in ' + (m.ms / 1000).toFixed(1) + ' s -> "' + m.text + '"'); status(''); idle(); }
     else if (m.type === 'err') fail('Error: ' + m.msg);
@@ -101,4 +103,5 @@ $('#go').onclick = () => {
   wk.postMessage({ type: 'read', px, w, h, max: +$('#mx').value || 48 }, [px.buffer]);
 };
 $('#stop').onclick = () => fail('Cancelled.');
+$('#copy').onclick = async () => { try { await navigator.clipboard.writeText(lines.join('\n')); $('#copy').textContent = 'Copied. Paste it to Claude.'; } catch (e) { const r = document.createRange(); r.selectNodeContents(log); getSelection().removeAllRanges(); getSelection().addRange(r); $('#copy').textContent = 'Selected: long-press and Copy'; } };
 </script></body></html>
