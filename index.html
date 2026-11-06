@@ -8,7 +8,7 @@
 <title>InkNotes</title>
 <meta name="theme-color" content="#1b1e26">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="app.css?v=wLbcFtnKV5">
+<link rel="stylesheet" href="app.css?v=TDlCpKTZgw">
 </head>
 <body>
 <div id="bar">
@@ -41,6 +41,7 @@
     <button id="bFin" class="hex page" title="Let your finger draw, not only scroll">☝<i class="lb">Finger: off</i></button>
     <button id="bZo" class="hex page" title="Zoom out">－<i>Zoom out</i></button>
     <button id="bZi" class="hex page" title="Zoom in">＋<i>Zoom in</i></button>
+    <button id="bFiles" class="hex page" title="Notes, uploads and backup">📁<i>Files</i></button>
     <button id="bSnap" class="hex page on" title="Guide lines that help things line up when you move them">📐<i class="lb">Guides</i></button>
     <button id="bClr" class="hex page danger" title="Clear this page">🧹<i>Clear</i></button>
   </div>
@@ -94,10 +95,24 @@
   <div id="pgList"></div>
   <label class="note">Name of the current page</label><input id="pgName">
   <div class="row"><button class="pri" id="pgNew">＋ New page…</button><button id="pgRen">Rename</button><button id="pgDup">Duplicate</button><button id="pgDel">Delete</button></div>
-  <div class="row"><button id="bkExp">Export backup</button><button id="bkImp">Import backup</button></div>
-  <input type="file" id="bkFile" accept=".json" hidden>
-  <p class="note">Pages are saved in this browser on this device. Export a backup now and then.</p>
+  <p class="note">Pages are saved in this browser on this device. Backup, uploads and search live in <b>Files</b> (menu).</p>
+  <button id="pgFiles" class="pri">📁 Open Files</button>
 </div></div>
+
+
+<div id="dFi" class="drawer wide"><header>Files <button data-close>✕</button></header><div class="body" id="fiBody">
+  <input id="fiSearch" type="search" placeholder="Search notes by title or by words on the page">
+  <h3>Notes <span id="fiCount" class="note"></span></h3>
+  <div id="fiNotes"></div>
+  <h3>Uploads</h3>
+  <div id="fiDrop" class="drop">Drop files here, or <button class="pri" id="fiUp">Upload files</button><input type="file" id="fiFile" multiple hidden><div class="note">Images can be placed on the page. PDFs and other files are kept here to open or download.</div></div>
+  <div id="fiUploads"></div>
+  <h3>Backup</h3>
+  <div class="row"><button id="bkExp">Export backup</button><button id="bkImp">Import backup</button><button id="fiPdf">Export all as PDF</button></div>
+  <input type="file" id="bkFile" accept=".json" hidden>
+  <p class="note" id="fiStore">Storage used: …</p>
+</div></div>
+<div id="fiPop" class="pop" hidden><b id="fiPopT">Delete this?</b><p id="fiPopP"></p><button id="fiYes">Yes, delete</button><button id="fiNo">Cancel</button></div>
 
 <div id="dSt" class="drawer"><header>Stickers and icons <button data-close>✕</button></header><div class="body">
   <div class="row"><button id="stTabE" class="pri">Color emoji</button><button id="stTabI">Outline icons</button></div>
@@ -136,7 +151,7 @@
   <input id="sCap" type="number" min="1">
   <label class="note">Handwriting to text uses</label>
   <select id="sRecog">
-    <option value="auto">Automatic (built-in recognizer if this browser has one, else Gemini)</option>
+    <option value="auto">Automatic (built-in if available, else Gemini)</option>
     <option value="chrome">Built-in browser recognizer only</option>
     <option value="gemini">Gemini only (needs key)</option>
     <option value="off">Off</option>
@@ -151,6 +166,6 @@
 </div></div>
 <div id="toast"></div>
 <button id="abChip" hidden></button>
-<script defer src="app.js?v=wLbcFtnKV5"></script>
+<script defer src="app.js?v=TDlCpKTZgw"></script>
 </body>
 </html>

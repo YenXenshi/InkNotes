@@ -1,6 +1,6 @@
 // Offline support. The page itself is "network first" (always fresh when online); the picture packs and the
 // chart library never change between builds, so they are "cache first" and each one is kept the first time it is used.
-const V = '7X8shlxxEK', A = 'jWB9fvHQd66449';
+const V = 'qNdxpUqh1t', A = 'jWB9fvHQd66449';
 const SHELL = 'shell-' + V, ASSETS = 'assets-' + A;
 const FILES = ['./', 'index.html', 'app.js', 'app.css', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'assets/icon.svg'];
 
